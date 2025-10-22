@@ -1,0 +1,62 @@
+
+-- 1. Insert 5 records with Customer errors
+INSERT INTO bronze.customer (customer_id, customer_age, customer_country, account_status, risk_score, primary_payment_method, uses_twofactor_auth, account_created_date, load_timestamp, customer_bank_name ) VALUES
+(9000001, 15, 'US', 'ACTIVE', 750, 'CREDIT_CARD', TRUE, '2023-01-01', CURRENT_TIMESTAMP(), 'CHASE'),      -- Invalid age (too young)
+(9000002, 101, 'US', 'ACTIVE', 750, 'CREDIT_CARD', TRUE, '2023-01-01', CURRENT_TIMESTAMP(), 'CHASE'),     -- Invalid age (too old)
+(9000003, 25, 'us', 'ACTIVE', 750, 'CREDIT_CARD', TRUE, '2023-01-01', CURRENT_TIMESTAMP(), 'CHASE'),      -- Invalid country code (lowercase)
+(9000004, 30, 'US', 'ACTIVE', 750, 'CREDIT_CARD', TRUE, '2023-01-01', CURRENT_TIMESTAMP(), 'CHASE'),    -- Invalid account status
+(9000005, 35, 'US', 'ACTIVE', 99, 'CREDIT_CARD', TRUE, '2023-01-01', CURRENT_TIMESTAMP(), 'CHASE');       -- Invalid risk score (too low)
+
+select * from bronze.merchant;
+
+
+INSERT INTO bronze.merchant (
+    merchant_id, 
+    merchant_name, 
+    merchant_country, 
+    merchant_category_code, 
+    processing_tier, 
+    merchant_account_status, 
+    merchant_risk_level, 
+    merchant_bank_name, 
+    registration_date, 
+    load_timestamp
+) VALUES
+-- 1. Invalid Merchant Category Code (MCC)
+('MER-REJ-01', 'Test Cafe', 'US', 4999, 'STANDARD', 'ACTIVE', 'LOW', 'Chase', '2023-01-15', CURRENT_TIMESTAMP());
+
+
+
+
+
+
+-- =================================================================
+-- MANUAL ERROR INSERTIONS FOR TRANSACTION TABLE TESTING
+-- =================================================================
+
+INSERT INTO bronze.transaction_data (
+    transaction_id, 
+    merchant_id, 
+    customer_id, 
+    transaction_date, 
+    amount_usd, 
+    currency, 
+    transaction_status, 
+    payment_type, 
+    bank_name, 
+    load_timestamp
+) VALUES
+-- 1. Invalid Amount (Negative)
+('TXN-REJ-01', 'MER-000100', 1000100, CURRENT_TIMESTAMP(), -25.50, 'USD', 'DECLINED', 'CREDIT_CARD', 'Chase', CURRENT_TIMESTAMP()),
+
+-- 2. Invalid Currency
+('TXN-REJ-02', 'MER-000200', 1000200, CURRENT_TIMESTAMP(), 150.00, 'BTC', 'APPROVED', 'DEBIT_CARD', 'BoA', CURRENT_TIMESTAMP()),
+
+-- 3. Invalid Transaction Status
+('TXN-REJ-03', 'MER-000300', 1000300, CURRENT_TIMESTAMP(), 75.00, 'EUR', 'PENDING', 'PAYPAL', 'Wells Fargo', CURRENT_TIMESTAMP()),
+
+-- 4. Null Merchant ID
+('TXN-REJ-04', NULL, 1000400, CURRENT_TIMESTAMP(), 200.00, 'GBP', 'APPROVED', 'APPLE_PAY', 'Citi', CURRENT_TIMESTAMP()),
+
+-- 5. Null Customer ID
+('TXN-REJ-05', 'MER-000500', NULL, CURRENT_TIMESTAMP(), 300.00, 'JPY', 'APPROVED', 'GOOGLE_PAY', 'Capital One', CURRENT_TIMESTAMP());
